@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela Endereco
+model Endereco {
+  id          Int      @id @default(autoincrement())
+  cep         String
+  estado      String
+  municipio   String
+  bairro      String
+  complemento String?
+
+  CidadaoEndereco CidadaoEndereco[]
+  //empresa     Empresa? // Um endereço pode ter uma empresa
+  //escola      Escola?  // Um endereço pode ter uma escola
+}
+
+// Tabela Cidadao
+model Cidadao {
+  id              Int      @id @default(autoincrement())
+  cpf             String   @unique
+  nome            String 
+  data_nascimento DateTime
+  responsavelId   Int?
+  enderecoId      Int
+  usuario         Usuario?
+
+  responsavel     Cidadao? @relation("CidadaoResponsavel", fields: [responsavelId], references: [id])
+  dependentes     Cidadao[] @relation("CidadaoResponsavel")
+
+  CidadaoEndereco CidadaoEndereco[]
+  CidadaoCondicao CidadaoCondicao[]
+  CidadaoAuxilio  CidadaoAuxilio[]
+  //alunosMatriculados AlunoMatriculado[]
+  //empregadosContratados EmpregadoContratado[]
+  //CidadaoNotificacao CidadaoNotificacao[]
+}
+
+// Tabela Usuario
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  tipo      String   // cidadao, administrador, gestor
+  email     String   @unique
+  senha     String
+  cidadaoId Int      @unique
+
+  cidadao   Cidadao  @relation(fields: [cidadaoId], references: [id])
+}
+
+// Tabela Condicao
+model Condicao {
+  id              Int      @id @default(autoincrement())
+  tipo            String   // desempregado, gestante, surdo, mudo, etc.
+
+  CidadaoCondicao  CidadaoCondicao[]
+}
+
+// Tabela Requisito
+model Requisito {
+  id        Int      @id @default(autoincrement())
+  descricao String
+  auxilioId Int
+
+  auxilio   Auxilio @relation(fields: [auxilioId], references: [id])
+}
+
+// Tabela Auxilio
+model Auxilio {
+  id                 Int      @id @default(autoincrement())
+  nome               String
+  valor_minimo       Int
+  descricao          String
+  informacoes_extras String?
+  tem_vagas          Boolean
+
+  requisitos         Requisito[]
+  CidadaoAuxilio     CidadaoAuxilio[]
+}
+
+model CidadaoEndereco {
+  id                 Int @id @default(autoincrement())
+  cidadaoId          Int
+  enderecoId         Int
+
+  cidadao Cidadao    @relation(fields: [cidadaoId], references: [id])
+  endereco Endereco  @relation(fields: [enderecoId], references: [id])
+}
+
+model CidadaoCondicao {
+  id          Int      @id @default(autoincrement())
+  cidadaoId   Int
+  condicaoId  Int
+  data_fim    DateTime?
+
+  cidadao     Cidadao  @relation(fields: [cidadaoId], references: [id])
+  condicao    Condicao @relation(fields: [condicaoId], references: [id])
+}
+
+model CidadaoAuxilio {
+  id           Int      @id @default(autoincrement())
+  cidadaoId    Int
+  auxilioId    Int
+  inscrito     Boolean @default(false)
+  elegivel     Boolean @default(false)
+
+  cidadao    Cidadao     @relation(fields: [cidadaoId], references: [id])
+  auxilio    Auxilio @relation(fields: [auxilioId], references: [id])
+
+  @@unique([cidadaoId, auxilioId]) // Evita duplicação de registros
+}
