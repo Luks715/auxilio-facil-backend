@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } 
 import { CidadaoService } from './cidadao.service';
 import { CreateCidadaoDto } from './dto/create-cidadao.dto';
 import { UpdateCidadaoDto } from './dto/update-cidadao.dto';
+import { CreateDependenteDto } from './dto/create-dependente.dto';
 
 @Controller('cidadao')
 export class CidadaoController {
@@ -12,9 +13,9 @@ export class CidadaoController {
     return this.cidadaoService.create(createCidadaoDto);
   }
 
-  @Get('/dependentes/:id')
-  async findDependentes(@Param('id') cidadaoId: number) {
-    return this.cidadaoService.findDependentes(cidadaoId);
+  @Get('/criarDependente')
+  async createDependentes(@Body() createDependenteDto: CreateDependenteDto) {
+    return this.cidadaoService.createDependente(createDependenteDto);
   }
 
   @Get('findByCpf/:cpf')

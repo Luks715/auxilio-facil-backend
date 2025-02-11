@@ -20,7 +20,7 @@ export class AuxilioService {
     });
 
     return auxilios;
-}
+  } 
 
   async findAuxiliosElegiveis(cidadaoId: number) {
     const auxilios = await this.prisma.cidadaoAuxilio.findMany({
@@ -32,7 +32,7 @@ export class AuxilioService {
     });
 
     return auxilios;
-}
+  }
 
   async findAll() {
     const auxilios = await this.prisma.auxilio.findMany();

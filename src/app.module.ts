@@ -6,9 +6,10 @@ import { CidadaoModule } from './cidadao/cidadao.module';
 import { CondicaoModule } from './condicao/condicao.module';
 import { RequisitoModule } from './requisito/requisito.module';
 import { AuxilioModule } from './auxilio/auxilio.module';
+import { NotificacoesModule } from './notificacoes/notificacoes.module';
 
 @Module({
-  imports: [UserModule, CidadaoModule, CondicaoModule, RequisitoModule, AuxilioModule],
+  imports: [UserModule, CidadaoModule, CondicaoModule, RequisitoModule, AuxilioModule, NotificacoesModule],
   controllers: [AppController],
   providers: [AppService],
 })
