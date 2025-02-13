@@ -59,7 +59,11 @@ export class CidadaoService {
     const cidadao = await this.prisma.cidadao.findUnique({
       where: { cpf },
       include: {
-        registro_dependentes: true,
+        registro_dependentes: {
+          include: {
+            dependente: true,
+          }
+        },
         registro_auxilios: {
           include: {
             auxilio: true, // Incluindo as informações do auxílio
