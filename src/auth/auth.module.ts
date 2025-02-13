@@ -6,6 +6,8 @@ import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigModule } from '@nestjs/config';
+import { CidadaoModule } from 'src/cidadao/cidadao.module';
 
 import { NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { LoginValidationMiddleware } from './middleware/LoginValidationMiddleware.middleware';
@@ -21,6 +23,8 @@ import { LoginValidationMiddleware } from './middleware/LoginValidationMiddlewar
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
     }),
+    ConfigModule,
+    CidadaoModule,
   ],
 })
 

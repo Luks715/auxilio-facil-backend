@@ -9,11 +9,31 @@ export class CidadaoService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCidadaoDto: CreateCidadaoDto) {
+    const { condicoes, endereco_principal, ...rest } = createCidadaoDto;
+  
     const cidadao = await this.prisma.cidadao.create({
-      data: createCidadaoDto,
+      data: {
+        ...rest,
+        endereco_principal: {
+          connect: { id: endereco_principal.id },
+        },
+        condicoes: {
+          connect: condicoes.map((condicao) => ({ id: condicao.id })),
+        },
+      },
     });
+  
     return cidadao;
   }
+  
+
+
+  //async create(createCidadaoDto: CreateCidadaoDto) {
+  //  const cidadao = await this.prisma.cidadao.create({
+  //    data: createCidadaoDto,
+  //  });
+  //  return cidadao;
+  //}
 
   async createDependente(createDependenteDto: CreateDependenteDto) {
     const cidadaoExistente = await this.findCidadaoByCpf(createDependenteDto.createCidadao.cpf);
@@ -25,8 +45,8 @@ export class CidadaoService {
   
       await this.prisma.cidadaoDependente.create({
         data: {
-          responsavelId: createDependenteDto.responsavelId,
-          dependenteId: dependente.id,
+          responsavel_id: createDependenteDto.responsavelId,
+          dependente_id: dependente.id,
           status: createDependenteDto.status,
         },
       });
@@ -39,22 +59,29 @@ export class CidadaoService {
     const cidadao = await this.prisma.cidadao.findUnique({
       where: { cpf },
       include: {
-        dependentes: true,
-        auxilios:    true, 
-        enderecos:   true, 
-        condicoes:   true, 
+        registro_dependentes: true,
+        registro_auxilios: {
+          include: {
+            auxilio: true, // Incluindo as informações do auxílio
+          },
+        },
+        registro_enderecos: true,
+        // registro_condicoes: true,
+        registro_notificacoes: true,
       },
     });
     return cidadao;
   }
+  
 
   async findAll() {
     const cidadaos = await this.prisma.cidadao.findMany({
       include: {
-        dependentes: true,
-        auxilios:    true, 
-        enderecos:   true, 
-        condicoes:   true, 
+        registro_dependentes: true,
+        registro_auxilios: true,
+        registro_enderecos: true,
+        //registro_condicoes: true,
+        registro_notificacoes: true,
       },
     });
     return cidadaos;
@@ -64,10 +91,11 @@ export class CidadaoService {
     const cidadao = await this.prisma.cidadao.findUnique({
       where: { id },
       include: {
-        dependentes: true,
-        auxilios:    true, 
-        enderecos:   true, 
-        condicoes:   true, 
+        registro_dependentes: true,
+        registro_auxilios: true,
+        registro_enderecos: true,
+        //registro_condicoes: true,
+        registro_notificacoes: true,
       },
     });
     return cidadao;

@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCondicaoDto } from './dto/create-condicao.dto';
 import { UpdateCondicaoDto } from './dto/update-condicao.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CondicaoService {
+  constructor(private readonly prisma: PrismaService) {}
   create(createCondicaoDto: CreateCondicaoDto) {
     return 'This action adds a new condicao';
   }
 
-  findAll() {
-    return `This action returns all condicao`;
+  async findAll() {
+    const condicoes = await this.prisma.condicao.findMany();
+    return condicoes;
   }
 
   findOne(id: number) {

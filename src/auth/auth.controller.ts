@@ -11,12 +11,20 @@ import { ConnectUserDto } from 'src/user/dto/connect-user.dto';
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
     
+    //@Public()
+    //@HttpCode(HttpStatus.OK)
+    //@Post('login')
+    //async Login(@Body() dto: LoginUserDto): Promise<{ token: string; cidadao: Cidadao }>  {
+    //    const tokenEcidadao = await this.authService.Login(dto);
+    //    return tokenEcidadao;
+    //}
+
     @Public()
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    async Login(@Body() dto: LoginUserDto): Promise<{ token: string; cidadao: Cidadao }>  {
-        const tokenEcidadao = await this.authService.Login(dto);
-        return tokenEcidadao;
+    async login(@Body() loginDto: { cpf: string, senha: string }) {
+        const { cpf, senha } = loginDto;
+        return await this.authService.Login(cpf, senha);
     }
      
     @Public()

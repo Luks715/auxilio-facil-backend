@@ -8,36 +8,36 @@ export class AuxilioController {
   constructor(private readonly auxilioService: AuxilioService) {}
 
   @Post()
-  create(@Body() createAuxilioDto: CreateAuxilioDto) {
+  async create(@Body() createAuxilioDto: CreateAuxilioDto) {
     return this.auxilioService.create(createAuxilioDto);
   }
 
   @Get('/elegivel/:id')
-  findElegiveis(@Param('id') id: number) {
+  async findElegiveis(@Param('id') id: number) {
     return this.auxilioService.findAuxiliosElegiveis(id);
   }
   @Get('/inscrito/:id')
-  findInscritos(@Param('id') id: number) {
+  async findInscritos(@Param('id') id: number) {
     return this.auxilioService.findAuxiliosInscritos(id);
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.auxilioService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.auxilioService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuxilioDto: UpdateAuxilioDto) {
+  async update(@Param('id') id: string, @Body() updateAuxilioDto: UpdateAuxilioDto) {
     return this.auxilioService.update(+id, updateAuxilioDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.auxilioService.remove(+id);
   }
 }

@@ -12,9 +12,9 @@ export class AuxilioService {
   }
 
   async findAuxiliosInscritos(cidadaoId: number) {
-    const auxilios = await this.prisma.cidadaoAuxilio.findMany({
+    const auxilios = await this.prisma.cidadaoAuxilios.findMany({
         where: {
-            cidadaoId: cidadaoId,
+            cidadao_id: cidadaoId,
             inscrito: true,
         }
     });
@@ -23,9 +23,9 @@ export class AuxilioService {
   } 
 
   async findAuxiliosElegiveis(cidadaoId: number) {
-    const auxilios = await this.prisma.cidadaoAuxilio.findMany({
+    const auxilios = await this.prisma.cidadaoAuxilios.findMany({
         where: {
-            cidadaoId: cidadaoId,
+            cidadao_id: cidadaoId,
             elegivel: true,
             inscrito: false
         }

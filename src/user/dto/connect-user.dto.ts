@@ -13,5 +13,5 @@ export class ConnectUserDto {
     tipo: string;
 
     @IsInt({ message: 'O ID do cidadão deve ser um número inteiro' })
-    cidadaoId: number;
+    cidadao_id: number;
 }

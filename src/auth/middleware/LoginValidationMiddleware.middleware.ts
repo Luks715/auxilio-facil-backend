@@ -13,7 +13,7 @@ import {
       const body = req.body;
   
       const loginRequestBody = new LoginUserDto();
-      loginRequestBody.email = body.email;
+      loginRequestBody.cpf = body.email;
       loginRequestBody.senha = body.senha;
   
       const validations = await validate(loginRequestBody);

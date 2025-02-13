@@ -22,19 +22,19 @@ model Endereco {
   bairro      String
   complemento String?
 
-  CidadaoEnderecos    CidadaoEnderecos[]
+  registro_cidadaos   CidadaoEnderecos[]
   Empresa             Empresa? // Um endereço pode ter uma empresa
   Escola              Escola?  // Um endereço pode ter uma escola
 
-  dono          Cidadao?
+  moradores_principais  Cidadao[] // Para acessar cidadãos que têm esse endereço como principal
 }
 
 // Tabela Condicao
 model Condicao {
   id              Int      @id @default(autoincrement())
-  tipo            String   // desempregado, gestante, surdo, mudo, etc.
+  tipo       String   // desempregado, gestante, surdo, mudo, etc.
 
-  CidadaoCondicao CidadaoCondicoes[]
+  usuarios        Cidadao[]
 }
 
 // Tabela Cidadao
@@ -45,160 +45,162 @@ model Cidadao {
   data_nascimento DateTime
   usuario         Usuario?
 
-  enderecoPrincipal Endereco @relation(fields: [enderecoPrincipalId], references: [id])
-  enderecoPrincipalId Int    @unique
-  
-  CidadaoDependentes CidadaoDependente[] @relation("Dependentes")
-  CidadaoResponsavel CidadaoDependente[] @relation("Responsaveis")
+  condicoes       Condicao[]
 
-  CidadaoEnderecos  CidadaoEnderecos[]
-  CidadaoCondicoes  CidadaoCondicoes[]
-  CidadaoAuxilios   CidadaoAuxilios[]
-  CidadaoEscolas    CidadaoEscolas[]
-  CidadaoEmpresas   CidadaoEmpresas[]
-  UserNotificacoes  UserNotificacoes[]
+  endereco_principal_id Int     // Relaciona diretamente o endereço principal
+  endereco_principal    Endereco @relation( fields: [endereco_principal_id], references: [id])
+  
+  registro_dependentes  CidadaoDependente[] @relation("Dependentes")
+  registro_responsavel  CidadaoDependente[] @relation("Responsaveis")
+
+  registro_enderecos     CidadaoEnderecos[]
+  registro_auxilios      CidadaoAuxilios[]
+  registro_escolas       CidadaoEscolas[]
+  registro_empresas      CidadaoEmpresas[]
+  registro_notificacoes  UserNotificacoes[]
 }
 
 // Tabela Usuario
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  tipo      String   // cidadao, administrador, gestor
-  email     String   @unique
-  senha     String
-  cidadaoId Int      @unique
-
-  cidadao   Cidadao  @relation(fields: [cidadaoId], references: [id])
+  id         Int      @id @default(autoincrement())
+  tipo       String   // cidadao, administrador, gestor
+  email      String   @unique
+  senha      String
+  cidadao_id Int      @unique
+  
+  cidadao    Cidadao  @relation(fields: [cidadao_id], references: [id])
 }
 
 // Tabela Requisito
 model Requisito {
-  id        Int      @id @default(autoincrement())
-  descricao String
-  auxilioId Int
+  id         Int      @id @default(autoincrement())
+  descricao  String
+  auxilio_id Int
 
-  auxilio   Auxilio @relation(fields: [auxilioId], references: [id])
+  auxilio    Auxilio @relation(fields: [auxilio_id], references: [id])
 }
 
 // Tabela Auxilio
 model Auxilio {
-  id                 Int      @id @default(autoincrement())
-  nome               String
-  valor_minimo       Int
-  descricao          String
-  tem_vagas          Boolean
+  id                    Int      @id @default(autoincrement())
+  nome                  String
+  valor_minimo          Int
+  descricao             String
+  tem_vagas             Boolean
 
-  requisitos          Requisito[]
-  CidadaoAuxilios     CidadaoAuxilios[]
+  requisitos            Requisito[]
+  registro_cidadaos     CidadaoAuxilios[]
 }
 
 model CidadaoEnderecos {
-  id                 Int @id @default(autoincrement())
-  cidadaoId          Int
-  enderecoId         Int
+  id                  Int @id @default(autoincrement())
+  cidadao_id          Int
+  endereco_id         Int
+  status              String
 
-  cidadao Cidadao    @relation(fields: [cidadaoId], references: [id])
-  endereco Endereco  @relation(fields: [enderecoId], references: [id])
+  cidadao  Cidadao    @relation(fields: [cidadao_id], references: [id])
+  endereco Endereco   @relation(fields: [endereco_id], references: [id])
 }
 
-model CidadaoCondicoes {
-  id            Int       @id @default(autoincrement())
-  cidadaoId     Int
-  condicaoId    Int
-  data_inicio   DateTime
-  valido_ate      DateTime?  // Adiciona a data_fim para controlar a validade
+//model CidadaoCondicoes {
+//  id             Int       @id @default(autoincrement())
+//  cidadao_id     Int
+//  condicao_id    Int
+//  data_inicio    DateTime
+//  valido_ate     DateTime?  // Adiciona a data_fim para controlar a validade
 
-  cidadao       Cidadao   @relation(fields: [cidadaoId], references: [id])
-  condicao      Condicao  @relation(fields: [condicaoId], references: [id])
+//  cidadao        Cidadao   @relation(fields: [cidadao_id], references: [id])
+//  condicao       Condicao  @relation(fields: [condicao_id], references: [id])
 
-  @@unique([cidadaoId, condicaoId])  // Garante que a combinação cidadao + condicao seja única
-}
+//  @@unique([cidadao_id, condicao_id])  // Garante que a combinação cidadao + condicao seja única
+//}
 
 model CidadaoAuxilios {
-  id           Int      @id @default(autoincrement())
-  cidadaoId    Int
-  auxilioId    Int
-  inscrito     Boolean @default(false)
-  elegivel     Boolean @default(false)
+  id            Int      @id @default(autoincrement())
+  cidadao_id    Int
+  auxilio_id    Int
+  inscrito      Boolean @default(false)
+  elegivel      Boolean @default(false)
 
-  cidadao      Cidadao     @relation(fields: [cidadaoId], references: [id])
-  auxilio      Auxilio @relation(fields: [auxilioId], references: [id])
+  cidadao       Cidadao     @relation(fields: [cidadao_id], references: [id])
+  auxilio       Auxilio @relation(fields: [auxilio_id], references: [id])
 
-  @@unique([cidadaoId, auxilioId]) // Evita duplicação de registros
+  @@unique([cidadao_id, auxilio_id]) // Evita duplicação de registros
 }
 
 model CidadaoDependente {
   id              Int       @id @default(autoincrement())
-  responsavelId   Int
-  dependenteId    Int
+  responsavel_id   Int
+  dependente_id    Int
   status          String    // Cônjuge, Filho, etc.
 
-  responsavel     Cidadao   @relation("Dependentes", fields: [responsavelId], references: [id])
-  dependente      Cidadao   @relation("Responsaveis", fields: [dependenteId], references: [id])
+  responsavel     Cidadao   @relation("Dependentes", fields: [responsavel_id], references: [id])
+  dependente      Cidadao   @relation("Responsaveis", fields: [dependente_id], references: [id])
 }
 
 model Empresa {
-  id          Int      @id @default(autoincrement())
-  nome        String
-  cnpj        String   @unique
-  tipo        String   // pública ou privada
-  enderecoId  Int      @unique
-  endereco    Endereco @relation(fields: [enderecoId], references: [id])
-  sedeId      Int?
+  id           Int      @id @default(autoincrement())
+  nome         String
+  cnpj         String   @unique
+  tipo         String   // pública ou privada
+  endereco_id  Int      @unique
+  endereco     Endereco @relation(fields: [endereco_id], references: [id])
+  sedeId       Int?
 
-  sede        Empresa? @relation("EmpresaSede", fields: [sedeId], references: [id])
-  filiais     Empresa[] @relation("EmpresaSede")
-  escolas     Escola[]
-  CidadaoEmpresas  CidadaoEmpresas[]
+  sede         Empresa? @relation("EmpresaSede", fields: [sedeId], references: [id])
+  filiais      Empresa[] @relation("EmpresaSede")
+  escolas      Escola[]
+  registro_funcionarios  CidadaoEmpresas[]
 }
 
 model Escola {
   id          Int      @id @default(autoincrement())
   nome        String
-  enderecoId  Int      @unique
-  empresaId   Int?
+  endereco_id  Int      @unique
+  empresa_id   Int?
 
-  endereco    Endereco @relation(fields: [enderecoId], references: [id])
-  empresa     Empresa? @relation(fields: [empresaId], references: [id])
+  endereco    Endereco @relation(fields: [endereco_id], references: [id])
+  empresa     Empresa? @relation(fields: [empresa_id], references: [id])
 
-  alunos  CidadaoEscolas[]
+  registro_alunos  CidadaoEscolas[]
 }
 
 model CidadaoEscolas {
-  id        Int      @id @default(autoincrement())
-  cidadaoId Int
-  escolaId  Int
-  matricula String
-  ativo     Boolean
-  status    String // Ensino médio completo, Ensino superior incompleto, etc...
+  id         Int      @id @default(autoincrement())
+  aluno_id   Int
+  escola_id  Int
+  matricula  String
+  ativo      Boolean
+  status     String // Ensino médio completo, Ensino superior incompleto, etc...
 
-  cidadao   Cidadao  @relation(fields: [cidadaoId], references: [id])
-  escola    Escola   @relation(fields: [escolaId], references: [id])
+  aluno      Cidadao  @relation(fields: [aluno_id], references: [id])
+  escola     Escola   @relation(fields: [escola_id], references: [id])
 }
 
 model CidadaoEmpresas {
-  id        Int      @id @default(autoincrement())
-  cidadaoId Int
-  empresaId Int
-  salario   Int
+  id             Int      @id @default(autoincrement())
+  funcionario_id Int
+  empresa_id     Int
+  salario        Int
 
-  cidadao   Cidadao  @relation(fields: [cidadaoId], references: [id])
-  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+  funcionario   Cidadao  @relation(fields: [funcionario_id], references: [id])
+  empresa       Empresa  @relation(fields: [empresa_id], references: [id])
 }
 
 model Notificacao {
   id        Int      @id @default(autoincrement())
-  cidadaoId Int
+  cidadao_id Int
   mensagem  String
 
-  UserNotificacoes UserNotificacoes[]
+  registro_usuarios UserNotificacoes[]
 }
 
 model UserNotificacoes {
-  id            Int      @id @default(autoincrement())
-  cidadaoId     Int
-  notificacaoId Int
-  lida          Boolean
+  id             Int      @id @default(autoincrement())
+  cidadao_id     Int
+  notificacao_id Int
+  lida           Boolean
 
-  cidadao       Cidadao  @relation(fields: [cidadaoId], references: [id])
-  notificacao   Notificacao  @relation(fields: [notificacaoId], references: [id])
+  cidadao        Cidadao  @relation(fields: [cidadao_id], references: [id])
+  notificacao    Notificacao  @relation(fields: [notificacao_id], references: [id])
 }

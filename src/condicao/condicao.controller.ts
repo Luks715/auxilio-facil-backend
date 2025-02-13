@@ -8,27 +8,28 @@ export class CondicaoController {
   constructor(private readonly condicaoService: CondicaoService) {}
 
   @Post()
-  create(@Body() createCondicaoDto: CreateCondicaoDto) {
+  async create(@Body() createCondicaoDto: CreateCondicaoDto) {
     return this.condicaoService.create(createCondicaoDto);
   }
 
   @Get()
-  findAll() {
-    return this.condicaoService.findAll();
+  async findAll() {
+    const condicoes = await this.condicaoService.findAll();
+    return condicoes;
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.condicaoService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCondicaoDto: UpdateCondicaoDto) {
+  async update(@Param('id') id: string, @Body() updateCondicaoDto: UpdateCondicaoDto) {
     return this.condicaoService.update(+id, updateCondicaoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.condicaoService.remove(+id);
   }
 }

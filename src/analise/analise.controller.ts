@@ -7,9 +7,11 @@ export class AnaliseController {
   constructor(private readonly analiseService: AnaliseService) {}
 
   @Post('bolsa-familia/:cidadaoId')
-  async bolsaFamiliaNovo(@Param('cidadaoId') cidadaoId: number) {
+  async bolsaFamiliaNovo(@Param('cidadaoId') cidadao_id: number) {
+    console.log(cidadao_id);
+    console.log("AAAAAAAAAAAA");
     try {
-      const resultado = await this.analiseService.bolsa_familia_novo(cidadaoId);
+      const resultado = await this.analiseService.novo_bolsa_familia(cidadao_id);
       if (!resultado) {
         return { message: 'Família não é elegível para o Bolsa Família.' };
       }

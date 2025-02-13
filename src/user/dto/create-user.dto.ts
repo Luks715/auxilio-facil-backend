@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsInt, IsDate, IsEmail } from 'class-validator';
+import { Condicao } from '@prisma/client';
 
 export class CreateUserDto {
   // Parâmetros do Endereço
@@ -28,13 +29,12 @@ export class CreateUserDto {
   @IsDate()
   data_nascimento: Date;
 
-  @IsOptional()
-  @IsInt()
-  responsavelId?: number;
-
   // Parâmetros do Usuário
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  condicoes?: Condicao[];  // Agora você pode passar um array de condições
 
   @IsString()
   senha: string;

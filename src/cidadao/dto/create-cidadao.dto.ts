@@ -1,4 +1,15 @@
-import { IsNotEmpty, IsOptional, IsString, Length, IsArray } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IsDate, ValidateNested, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ConnectCondicaoDto {
+  @IsNotEmpty()
+  id: number; // Somente o ID da Condição
+}
+
+class ConnectEnderecoDto {
+  @IsNotEmpty()
+  id: number; // Somente o ID do Endereço
+}
 
 export class CreateCidadaoDto {
   @IsNotEmpty({ message: 'O CPF é obrigatório' })
@@ -11,48 +22,17 @@ export class CreateCidadaoDto {
   nome: string;
 
   @IsNotEmpty({ message: 'A data de nascimento é obrigatória' })
+  @IsDate()
+  @Type(() => Date)
   data_nascimento: Date;
 
-  @IsOptional()
-  dependentes?: {
-    create: {
-      responsavelId: number;
-      status: string;
-      dependente: {
-        create: { // Agora estamos criando um novo Cidadao
-          cpf: string;
-          nome: string;
-          data_nascimento: Date;
-        };
-      };
-    }[];
-  };
+  @IsNotEmpty({ message: 'O endereço principal é obrigatório' })
+  @ValidateNested()
+  @Type(() => ConnectEnderecoDto)
+  endereco_principal: ConnectEnderecoDto; // Formato para conectar um endereço existente
 
-  @IsNotEmpty({ message: 'O endereço é obrigatório' })
-  enderecos: { 
-    create: { // Aqui, estamos criando um novo CidadaoEndereco
-      enderecoId: number;
-    }[];
-  };
-
-  @IsOptional()
-  condicoes?: { 
-    create: { // Criando uma nova condição
-      condicaoId: number; 
-      data_inicio: Date; // Agora data_inicio é obrigatória
-      valido_ate?: Date; 
-    }[]; 
-  };
-
-  @IsOptional()
-  auxilios?: { 
-    create: { 
-      auxilioId: number;
-      nome: string; // Agora incluímos os campos necessários
-      valor_minimo: number;
-      descricao: string;
-      informacoes_extras?: string;
-      tem_vagas: boolean;
-    }[]; 
-  };
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConnectCondicaoDto)
+  condicoes: ConnectCondicaoDto[]; // Lista de IDs para conectar condições existentes
 }

@@ -22,10 +22,10 @@ export class AuthService {
         private readonly configService: ConfigService,
     ) {} 
 
-    async Login(dto: LoginUserDto): Promise<{ token: string; cidadao: any }> {
+    async Login(cpf: string, senha: string): Promise<{ token: string; cidadao: any }> {
         const user = await this.validateUser(
-            dto.email, 
-            dto.senha
+            cpf, 
+            senha
         );
 
         if (!user) {
@@ -42,18 +42,18 @@ export class AuthService {
 
         return { 
             token: jwtToken,
-            cidadao: user.cidadaoId 
+            cidadao: user.cidadao_id
         };
     }
   
-    async validateUser(email: string, senha: string) {
-      const user = await this.UserService.findUserByEmail(email);
+    async validateUser(cpf: string, senha: string) {
+      const usuario = await this.UserService.findModelUserByCpf(cpf);
 
-      if (user) {
-        const isPasswordValid = await bcrypt.compare(senha, user.senha);
+      if (usuario) {
+        const isPasswordValid = await bcrypt.compare(senha, usuario.senha);
         if (isPasswordValid) {
           return {
-            ...user,
+            ...usuario,
             senha: undefined,
           };
         }

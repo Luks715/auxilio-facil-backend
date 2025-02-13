@@ -2,20 +2,26 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Cidadao } from '@prisma/client';
+import { CidadaoService } from 'src/cidadao/cidadao.service';
 
 @Injectable()
 export class AnaliseService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,
+              private readonly cidadaoService: CidadaoService
+  ) {}
 
-    async bolsa_familia_novo(cidadaoId: number) {
+    async novo_bolsa_familia(id: number) {
+        console.log(id);
+        console.log("BBBBBBBBBBB");
+
         const responsavel = await this.prisma.cidadao.findUnique({
-            where: { id: cidadaoId },
+            where: { id },
             include: { 
-                CidadaoDependentes: { 
+                registro_dependentes: { 
                     include: { 
                         dependente: { 
                             include: {
-                                enderecoPrincipal: true
+                                endereco_principal: true
                             }
                         }
                     }  
@@ -23,16 +29,28 @@ export class AnaliseService {
             }
         });
 
+        if (!responsavel) {
+            throw new Error(`Cidadão com ID ${id} não encontrado.`);
+        }
+        
+
         let membros_aptos = 0;
         let registroEmpresa = await this.prisma.cidadaoEmpresas.findFirst({
-            where: { cidadaoId: responsavel.id },
+            where: { funcionario_id: responsavel.id },
         });
 
-        const renda_casa = registroEmpresa ? registroEmpresa.salario : 0;
+        let renda_casa;
 
-        for (const registro of responsavel.CidadaoDependentes) {
+        if (registroEmpresa) {
+            renda_casa = registroEmpresa.salario;
+        } else {
+            renda_casa = 0;
+            return true;
+        }
+
+        for (const registro of responsavel.registro_dependentes) {
             // Verificar se o endereço do dependente é o mesmo do responsável
-            if (registro.dependente.enderecoPrincipalId === responsavel.enderecoPrincipalId) {
+            if (registro.dependente.endereco_principal_id === responsavel.endereco_principal_id) {
 
                 const dataNascimento = new Date(registro.dependente.data_nascimento);
                 const dataLimite = new Date();
@@ -59,8 +77,8 @@ export class AnaliseService {
         if (renda_casa / membros_aptos < (1510 / 2)) { // Meio salário mínimo
             await this.prisma.cidadaoAuxilios.create({
                 data: {
-                    cidadaoId: responsavel.id,
-                    auxilioId: 1, // Assumindo ID 1 para Bolsa Família
+                    cidadao_id: responsavel.id,
+                    auxilio_id: 1, // Assumindo ID 1 para Bolsa Família
                     inscrito: false,
                     elegivel: true,
                 },
@@ -72,11 +90,11 @@ export class AnaliseService {
         const responsavel = await this.prisma.cidadao.findUnique({
             where: { id: cidadaoId },
             include: { 
-                CidadaoDependentes: { 
+                registro_dependentes: { 
                     include: { 
                         dependente: { 
                             include: {
-                                enderecoPrincipal: true
+                                endereco_principal: true
                             }
                         }
                     }  
@@ -86,15 +104,15 @@ export class AnaliseService {
   
         let membros_aptos = 0;
         let registroEmpresa = await this.prisma.cidadaoEmpresas.findFirst({
-            where: { cidadaoId: responsavel.id },
+            where: { funcionario_id: responsavel.id },
         });
     
         const renda_casa = registroEmpresa ? registroEmpresa.salario : 0;
     
         // Processar dependentes
-        for (const registro of responsavel.CidadaoDependentes) {
+        for (const registro of responsavel.registro_dependentes) {
             // Verificar se o endereço do dependente é o mesmo do responsável
-            if (registro.dependente.enderecoPrincipalId === responsavel.enderecoPrincipalId) {
+            if (registro.dependente.endereco_principal_id === responsavel.endereco_principal_id) {
                 if (registro.status === 'Cônjuge') {
                     membros_aptos += 1;
                 } else if (registro.dependente.data_nascimento < new Date('2007-01-01')) { // Menor que 18 anos
@@ -111,8 +129,8 @@ export class AnaliseService {
         if (renda_casa / membros_aptos < (1510 / 2)) { // Meio salário mínimo
         await this.prisma.cidadaoAuxilios.create({
             data: {
-            cidadaoId: responsavel.id,
-            auxilioId: 1, // Assumindo ID 1 para Bolsa Família
+            cidadao_id: responsavel.id,
+            auxilio_id: 1, // Assumindo ID 1 para Bolsa Família
             inscrito: false,
             elegivel: true,
             },
@@ -135,7 +153,7 @@ export class AnaliseService {
   private async isEstudante(cidadao: Cidadao) {
     // Verificar se o cidadão está matriculado em uma instituição de ensino
     const matricula = await this.prisma.cidadaoEscolas.findMany({
-      where: { cidadaoId: cidadao.id },
+      where: { aluno_id: cidadao.id },
     });
 
     for (const aluno of matricula) {

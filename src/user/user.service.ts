@@ -27,9 +27,12 @@ export class UserService {
     try {
       const { 
         cep, estado, municipio, bairro, complemento,
-        cpf, data_nascimento, responsavelId,
+        cpf, nome, data_nascimento, condicoes,
         email, senha, tipo
       } = createUserDto;
+
+      // Converte as condições para um array de IDs, caso existam
+      const condicoesIds = condicoes ? condicoes.map(cond => cond.id) : [];
   
       // Chama a função criada no banco de dados, passando os parâmetros
       const usuarioId = await this.prisma.$queryRaw`SELECT criar_usuario(
@@ -40,12 +43,14 @@ export class UserService {
         ${complemento},
         
         ${cpf}, 
+        ${nome}, 
         ${data_nascimento}, 
-        ${responsavelId}, 
   
         ${email}, 
         ${senha}, 
-        ${tipo}
+        ${tipo}, 
+
+        ${condicoes}
       )`;
   
       return true; // Retorna true se o usuário for criado com sucesso
@@ -59,11 +64,36 @@ export class UserService {
     return users;
   }
 
+  async findModelUserByCpf(cpf: string) {
+    if (!cpf) {
+        throw new Error("CPF não foi fornecido");
+    }
+
+    // Verifica se o CIDADAO foi encontrado
+    const cidadao = await this.cidadaoService.findCidadaoByCpf(cpf);
+
+    if (!cidadao || !cidadao.id) {
+        throw new NotFoundException(`Cidadao com CPF ${cpf} não encontrado ou sem ID válido`);
+    }
+
+    // Verifica se o usuário com esse cidadao_id existe
+    const usuario = await this.prisma.usuario.findUnique({
+        where: { cidadao_id: cidadao.id },
+    });
+
+    if (!usuario) {
+        throw new NotFoundException(`O usuário com o cpf ${cpf} não foi encontrado`);
+    }
+
+    return usuario;
+}
+
+
   async findUserByEmail(email: string) {
     const usuario = await this.prisma.usuario.findUnique({ where: { email } });
   
     if (!usuario) {
-      throw new NotFoundException(`O usuário com o id ${email} não foi encontrado`);
+      throw new NotFoundException(`O usuário com o email ${email} não foi encontrado`);
     }
   
     return usuario;
@@ -78,7 +108,7 @@ export class UserService {
       }
 
       const user = await this.prisma.usuario.findUnique({
-        where: {cidadaoId: cidadao.id}
+        where: {cidadao_id: cidadao.id}
       });
 
       if (user) {
